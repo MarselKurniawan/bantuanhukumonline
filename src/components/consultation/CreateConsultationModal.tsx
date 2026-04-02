@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface Props {
   open: boolean;
   onClose: () => void;
+  onCreated?: (consultationId: string, type: string) => void;
 }
 
 interface LawyerOption {
