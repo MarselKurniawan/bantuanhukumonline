@@ -169,5 +169,8 @@ export default function ConsultationList() {
         </div>
       </div>
     </div>
+
+      <CreateConsultationModal open={showCreate} onClose={() => setShowCreate(false)} />
+    </div>
   );
 }
