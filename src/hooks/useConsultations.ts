@@ -28,6 +28,8 @@ function mapRow(row: any): Consultation {
     penyandangDisabilitas: row.penyandang_disabilitas || false,
     clientUserId: row.client_user_id || undefined,
     lawyerUserId: row.lawyer_user_id || undefined,
+    startTime: row.start_time || undefined,
+    endTime: row.end_time || undefined,
   };
 }
 

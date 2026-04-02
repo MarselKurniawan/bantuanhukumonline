@@ -4,7 +4,7 @@ import { ChevronRight, Home, Camera, MessageCircle, Video, StopCircle, ArrowLeft
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useConsultation } from '@/hooks/useConsultations';
-import { useTimer } from '@/hooks/useTimer';
+import { useTimer, formatDurationText } from '@/hooks/useTimer';
 import { useAuth } from '@/contexts/AuthContext';
 import ChatRoom from '@/components/consultation/ChatRoom';
 import RatingPanel from '@/components/consultation/RatingPanel';
@@ -29,7 +29,8 @@ export default function ConsultationRoom() {
   const [searchParams] = useSearchParams();
   const { role, profile } = useAuth();
   const { consultation, loading: consultationLoading, updateConsultation } = useConsultation(id);
-  const timer = useTimer();
+  const startTimeFromDB = consultation?.startTime || null;
+  const timer = useTimer(consultation?.status === 'in_progress' ? startTimeFromDB : null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraMode, setCameraMode] = useState<'start' | 'end' | 'edit_start' | 'edit_end'>('start');
   const [started, setStarted] = useState(false);
@@ -57,7 +58,10 @@ export default function ConsultationRoom() {
       if (consultation.endPhoto) setEndPhoto(consultation.endPhoto);
       if (consultation.status === 'in_progress') {
         setStarted(true);
-        if (!timer.isRunning) timer.start();
+        // Auto-open chat for chat/video consultations
+        if (consultation.consultationType === 'chat' || consultation.consultationType === 'video_call') {
+          setChatOpen(true);
+        }
       }
       if (consultation.status === 'completed') {
         setStarted(true);
@@ -136,7 +140,7 @@ export default function ConsultationRoom() {
       setEndPhoto(url);
       setEnded(true);
       timer.stop();
-      const durationMins = Math.floor(timer.seconds / 60);
+      const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
       await updateConsultation({ end_photo: url, status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
     } else if (cameraMode === 'edit_start') {
       const url = await uploadPhoto(imageData, 'start_edit');
@@ -151,16 +155,16 @@ export default function ConsultationRoom() {
     }
   };
 
-  const handleStartChat = () => { setChatOpen(true); setStarted(true); timer.start(); updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() }); };
+  const handleStartChat = () => { setChatOpen(true); setStarted(true); updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() }); };
   const handleEndChat = () => {
-    setChatOpen(false); setEnded(true); timer.stop();
-    const durationMins = Math.floor(timer.seconds / 60);
+    setEnded(true); timer.stop();
+    const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
     updateConsultation({ status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
   };
-  const handleStartVideo = () => { setChatOpen(true); setStarted(true); timer.start(); updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() }); };
+  const handleStartVideo = () => { setChatOpen(true); setStarted(true); updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() }); };
   const handleEndVideo = () => {
     setEnded(true); timer.stop();
-    const durationMins = Math.floor(timer.seconds / 60);
+    const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
     updateConsultation({ status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
   };
 
@@ -208,7 +212,7 @@ export default function ConsultationRoom() {
           )}
           {isOffline && !started && <Button onClick={handleStartOffline} className="gap-2 h-9 text-sm font-semibold"><Camera className="h-4 w-4" /> Mulai Konsultasi</Button>}
           {isOffline && started && !ended && <Button variant="destructive" onClick={handleEndOffline} className="gap-2 h-9 text-sm font-semibold"><StopCircle className="h-4 w-4" /> Akhiri</Button>}
-          {isChat && !chatOpen && !ended && <Button onClick={handleStartChat} className="gap-2 h-9 text-sm font-semibold"><MessageCircle className="h-4 w-4" /> Buka Chat</Button>}
+          {isChat && !started && !ended && <Button onClick={handleStartChat} className="gap-2 h-9 text-sm font-semibold"><MessageCircle className="h-4 w-4" /> Buka Chat</Button>}
           {isChat && chatOpen && !ended && <Button variant="destructive" onClick={handleEndChat} className="gap-2 h-9 text-sm font-semibold"><StopCircle className="h-4 w-4" /> Akhiri</Button>}
           {isVideo && !started && <Button onClick={handleStartVideo} className="gap-2 h-9 text-sm font-semibold"><Video className="h-4 w-4" /> Mulai Video</Button>}
           {isVideo && started && !ended && <Button variant="destructive" onClick={handleEndVideo} className="gap-2 h-9 text-sm font-semibold"><StopCircle className="h-4 w-4" /> Akhiri</Button>}
@@ -376,7 +380,11 @@ export default function ConsultationRoom() {
                   ) : (
                     <div className="flex items-center gap-1.5">
                       {timer.isRunning && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />}
-                      <span className="text-[13px] font-bold font-mono text-primary">{timer.formatted}</span>
+                      <span className="text-[13px] font-bold text-primary">
+                        {ended || consultation.status === 'completed'
+                          ? formatDurationText(consultation.duration || Math.floor(timer.seconds / 60))
+                          : timer.formatted}
+                      </span>
                       {canEdit && (
                         <Button variant="ghost" size="sm" className="h-5 w-5 p-0 ml-1" onClick={() => setEditingDuration(true)}>
                           <Edit2 className="h-3 w-3 text-muted-foreground" />
