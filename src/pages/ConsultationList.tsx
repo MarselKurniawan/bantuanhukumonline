@@ -43,6 +43,7 @@ const PER_PAGE_OPTIONS = [10, 20, 30, 0]; // 0 = show all
 
 export default function ConsultationList() {
   const navigate = useNavigate();
+  const { role } = useAuth();
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
