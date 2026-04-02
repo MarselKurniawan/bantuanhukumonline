@@ -47,7 +47,7 @@ export default function ConsultationList() {
           <h1 className="text-xl font-bold">Riwayat Konsultasi</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Kelola dan pantau semua sesi konsultasi hukum</p>
         </div>
-        <Button onClick={() => navigate('/consultation/new')} className="gap-2 h-10 font-semibold">
+        <Button onClick={() => setShowCreate(true)} className="gap-2 h-10 font-semibold">
           <Plus className="h-4 w-4" /> Buat Konsultasi
         </Button>
       </div>
