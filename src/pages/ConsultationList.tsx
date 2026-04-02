@@ -230,7 +230,7 @@ export default function ConsultationList() {
                     <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Semua Tahun" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Semua Tahun</SelectItem>
-                      {years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+                      {years.map((y: any) => <SelectItem key={String(y)} value={String(y)}>{String(y)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
