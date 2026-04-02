@@ -140,7 +140,7 @@ export default function ConsultationRoom() {
       setEndPhoto(url);
       setEnded(true);
       timer.stop();
-      const durationMins = Math.floor(timer.seconds / 60);
+      const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
       await updateConsultation({ end_photo: url, status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
     } else if (cameraMode === 'edit_start') {
       const url = await uploadPhoto(imageData, 'start_edit');
