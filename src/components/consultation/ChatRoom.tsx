@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Paperclip, FileIcon, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ChatMessage, ChatFile } from '@/types/consultation';
+import { ChatMessage } from '@/types/consultation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -9,10 +9,9 @@ interface Props {
   consultationId: string;
   clientName: string;
   disabled?: boolean;
-  onFileShared?: (file: ChatFile) => void;
 }
 
-export default function ChatRoom({ consultationId, clientName, disabled, onFileShared }: Props) {
+export default function ChatRoom({ consultationId, clientName, disabled }: Props) {
   const { user, profile } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -135,7 +134,6 @@ export default function ChatRoom({ consultationId, clientName, disabled, onFileS
       file_type: file.type,
     });
 
-    onFileShared?.(chatFile);
     e.target.value = '';
   };
 
