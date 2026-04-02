@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ChatRoom from '@/components/consultation/ChatRoom';
 import RatingPanel from '@/components/consultation/RatingPanel';
 import CameraModal from '@/components/consultation/CameraModal';
+import ClientDetailCard from '@/components/consultation/ClientDetailCard';
 import { toast } from 'sonner';
 
 const statusStyle: Record<string, string> = {
