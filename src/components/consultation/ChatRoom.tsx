@@ -9,10 +9,9 @@ interface Props {
   consultationId: string;
   clientName: string;
   disabled?: boolean;
-  onFileShared?: (file: ChatFile) => void;
 }
 
-export default function ChatRoom({ consultationId, clientName, disabled, onFileShared }: Props) {
+export default function ChatRoom({ consultationId, clientName, disabled }: Props) {
   const { user, profile } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -135,7 +134,6 @@ export default function ChatRoom({ consultationId, clientName, disabled, onFileS
       file_type: file.type,
     });
 
-    onFileShared?.(chatFile);
     e.target.value = '';
   };
 
