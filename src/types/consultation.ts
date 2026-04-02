@@ -27,6 +27,8 @@ export interface Consultation {
   penyandangDisabilitas?: boolean;
   clientUserId?: string;
   lawyerUserId?: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface ChatMessage {
