@@ -11,14 +11,7 @@ import { toast } from 'sonner';
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    nama: '',
-    nik: '',
-    nomorWa: '',
-    tanggalLahir: '',
-    jenisKelamin: '',
-    penyandangDisabilitas: 'false',
-    email: '',
-    password: '',
+    nama: '', nik: '', nomorWa: '', tanggalLahir: '', jenisKelamin: '', penyandangDisabilitas: 'false', email: '', password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,52 +21,52 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nama.trim() || !form.nik || !form.email || !form.password) {
-      toast.error('Nama, NIK, Email, dan Password wajib diisi');
-      return;
+      toast.error('Nama, NIK, Email, dan Password wajib diisi'); return;
     }
-    if (form.nik.length !== 16) {
-      toast.error('NIK harus tepat 16 digit');
-      return;
+    if (form.nik.length !== 16 || !/^\d{16}$/.test(form.nik)) {
+      toast.error('NIK harus tepat 16 digit angka'); return;
     }
-    if (!/^\d{16}$/.test(form.nik)) {
-      toast.error('NIK hanya boleh berisi angka (16 digit)');
-      return;
-    }
-    if (!form.jenisKelamin) {
-      toast.error('Jenis kelamin wajib dipilih');
-      return;
-    }
-    if (form.password.length < 6) {
-      toast.error('Password minimal 6 karakter');
-      return;
-    }
+    if (!form.jenisKelamin) { toast.error('Jenis kelamin wajib dipilih'); return; }
+    if (form.password.length < 6) { toast.error('Password minimal 6 karakter'); return; }
 
     setLoading(true);
-    // Pass all profile data as user_metadata so the trigger saves it
+
+    // Check if NIK already exists
+    const { data: existingProfiles } = await supabase
+      .from('profiles')
+      .select('id, nama, approval_status, rejection_reason')
+      .eq('nik', form.nik);
+
+    if (existingProfiles && existingProfiles.length > 0) {
+      const existing = existingProfiles[0];
+      if (existing.approval_status === 'pending') {
+        toast.error('NIK ini sudah terdaftar dan sedang menunggu persetujuan admin.');
+        setLoading(false);
+        return;
+      }
+      if (existing.approval_status === 'approved') {
+        toast.error('NIK ini sudah terdaftar dan aktif. Silakan login.');
+        setLoading(false);
+        return;
+      }
+      // If rejected, allow re-registration (the old account stays but new one is created)
+    }
+
     const { error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
         data: {
-          nama: form.nama,
-          nik: form.nik,
-          nomor_wa: form.nomorWa || null,
-          tanggal_lahir: form.tanggalLahir || null,
-          jenis_kelamin: form.jenisKelamin,
+          nama: form.nama, nik: form.nik, nomor_wa: form.nomorWa || null,
+          tanggal_lahir: form.tanggalLahir || null, jenis_kelamin: form.jenisKelamin,
           penyandang_disabilitas: form.penyandangDisabilitas === 'true',
         },
       },
     });
 
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-      return;
-    }
+    if (error) { toast.error(error.message); setLoading(false); return; }
 
-    // Sign out immediately so the new user doesn't stay logged in
     await supabase.auth.signOut();
-
     setLoading(false);
     toast.success('Registrasi berhasil! Akun Anda menunggu persetujuan admin.');
     navigate('/login');
@@ -82,7 +75,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-md">
-        <div className="bg-card rounded-2xl shadow-lg border border-border p-8">
+        <div className="bg-card rounded-2xl shadow-lg border border-border p-6 sm:p-8">
           <div className="flex flex-col items-center mb-6">
             <div className="h-14 w-14 rounded-xl bg-primary flex items-center justify-center mb-3">
               <Gavel className="h-7 w-7 text-primary-foreground" />
