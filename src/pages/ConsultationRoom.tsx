@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { ChevronRight, Home, Camera, MessageCircle, Video, StopCircle, ArrowLeft, Clock, User, FileText, Calendar, Scale } from 'lucide-react';
+import { ChevronRight, Home, Camera, MessageCircle, Video, StopCircle, ArrowLeft, Clock, User, FileText, Calendar, Scale, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { consultations } from '@/data/mockData';
 import { useTimer } from '@/hooks/useTimer';
@@ -25,6 +25,8 @@ export default function ConsultationRoom() {
   const [started, setStarted] = useState(false);
   const [ended, setEnded] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [startPhoto, setStartPhoto] = useState<string | null>(null);
+  const [endPhoto, setEndPhoto] = useState<string | null>(null);
 
   if (!consultation) {
     return (
@@ -42,9 +44,9 @@ export default function ConsultationRoom() {
 
   const handleStartOffline = () => { setCameraMode('start'); setCameraOpen(true); };
   const handleEndOffline = () => { setCameraMode('end'); setCameraOpen(true); };
-  const handleCameraCapture = () => {
-    if (cameraMode === 'start') { setStarted(true); timer.start(); }
-    else { setEnded(true); timer.stop(); }
+  const handleCameraCapture = (imageData: string) => {
+    if (cameraMode === 'start') { setStartPhoto(imageData); setStarted(true); timer.start(); }
+    else { setEndPhoto(imageData); setEnded(true); timer.stop(); }
   };
   const handleStartChat = () => { setChatOpen(true); setStarted(true); timer.start(); };
   const handleEndChat = () => { setChatOpen(false); setEnded(true); timer.stop(); };
@@ -90,9 +92,8 @@ export default function ConsultationRoom() {
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        {/* Left: main area - chat/offline/video */}
+        {/* Left: main area */}
         <div className="lg:col-span-3 space-y-5">
-          {/* Chat or main panel */}
           <div className="bg-card rounded-lg border overflow-hidden" style={{ minHeight: '460px' }}>
             {(isChat || isVideo) && chatOpen ? (
               <div className="h-[460px] flex flex-col">
@@ -143,7 +144,31 @@ export default function ConsultationRoom() {
             </div>
           )}
 
-          {/* Rating (below chat on larger screens) */}
+          {/* Bukti Konsultasi - proof photos */}
+          {(startPhoto || endPhoto) && (
+            <div className="bg-card rounded-lg border">
+              <div className="px-4 py-3 border-b flex items-center gap-2">
+                <ImageIcon className="h-4 w-4 text-primary" />
+                <h3 className="font-bold text-sm">Bukti Konsultasi</h3>
+              </div>
+              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {startPhoto && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Foto Mulai</p>
+                    <img src={startPhoto} alt="Bukti mulai konsultasi" className="w-full rounded-lg border object-cover max-h-48" />
+                  </div>
+                )}
+                {endPhoto && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Foto Selesai</p>
+                    <img src={endPhoto} alt="Bukti akhir konsultasi" className="w-full rounded-lg border object-cover max-h-48" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Rating mobile */}
           {showRating && (
             <div className="lg:hidden">
               <RatingPanel />
@@ -153,7 +178,6 @@ export default function ConsultationRoom() {
 
         {/* Right: detail + rating */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Detail card */}
           <div className="bg-card rounded-lg border">
             <div className="px-4 py-3 border-b">
               <h3 className="font-bold text-sm">Detail Konsultasi</h3>
@@ -166,9 +190,7 @@ export default function ConsultationRoom() {
                 </span>
               </div>
             </div>
-
             <div className="p-4 space-y-3">
-              {/* People */}
               {[
                 { role: 'Pengacara', name: consultation.lawyerName || 'Lawyer' },
                 { role: 'Klien', name: consultation.clientName },
@@ -183,10 +205,7 @@ export default function ConsultationRoom() {
                   </div>
                 </div>
               ))}
-
               <div className="border-t my-3" />
-
-              {/* Info items */}
               {[
                 { icon: FileText, label: 'Nama Kasus', value: consultation.caseName },
                 { icon: Scale, label: 'Jenis Hukum', value: consultation.lawType },
@@ -203,8 +222,6 @@ export default function ConsultationRoom() {
                   </div>
                 </div>
               ))}
-
-              {/* Duration */}
               <div className="flex items-center gap-3">
                 <div className="h-7 w-7 rounded bg-primary/10 flex items-center justify-center shrink-0">
                   <Clock className="h-3 w-3 text-primary" />
@@ -220,7 +237,6 @@ export default function ConsultationRoom() {
             </div>
           </div>
 
-          {/* Rating (right column on large) */}
           {showRating && (
             <div className="hidden lg:block">
               <RatingPanel />
