@@ -304,7 +304,7 @@ export default function ConsultationList() {
                     </td>
                     <td className="py-3 px-4 text-xs">{c.lawType}</td>
                     <td className="py-3 px-4 text-xs text-muted-foreground whitespace-nowrap">{c.date}</td>
-                    <td className="py-3 px-4 text-xs text-muted-foreground font-mono">{c.duration ? `${c.duration}m` : '-'}</td>
+                    <td className="py-3 px-4 text-xs text-muted-foreground">{formatDurationText(c.duration || 0)}</td>
                     <td className="py-3 px-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold ${statusStyle[c.status]}`}>
                         {statusLabel[c.status]}
