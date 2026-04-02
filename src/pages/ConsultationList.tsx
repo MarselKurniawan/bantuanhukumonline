@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, SlidersHorizontal, Download, ExternalLink, Trash2, Plus, Monitor, MessageCircle, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { consultations } from '@/data/mockData';
+import CreateConsultationModal from '@/components/consultation/CreateConsultationModal';
 
 const statusStyle: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800',
@@ -23,6 +24,7 @@ const typeStyle: Record<string, { icon: typeof Monitor; label: string; cls: stri
 export default function ConsultationList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
 
   const filtered = consultations.filter(
     (c) =>
@@ -38,6 +40,7 @@ export default function ConsultationList() {
   ];
 
   return (
+    <>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -45,7 +48,7 @@ export default function ConsultationList() {
           <h1 className="text-xl font-bold">Riwayat Konsultasi</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Kelola dan pantau semua sesi konsultasi hukum</p>
         </div>
-        <Button onClick={() => navigate('/consultation/new')} className="gap-2 h-10 font-semibold">
+        <Button onClick={() => setShowCreate(true)} className="gap-2 h-10 font-semibold">
           <Plus className="h-4 w-4" /> Buat Konsultasi
         </Button>
       </div>
@@ -167,5 +170,8 @@ export default function ConsultationList() {
         </div>
       </div>
     </div>
+
+    <CreateConsultationModal open={showCreate} onClose={() => setShowCreate(false)} />
+    </>
   );
 }
