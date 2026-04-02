@@ -130,14 +130,14 @@ export default function ConsultationRoom() {
       setStartPhoto(url);
       setStarted(true);
       timer.start();
-      await updateConsultation({ start_photo: url, status: 'in_progress' });
+      await updateConsultation({ start_photo: url, status: 'in_progress', start_time: new Date().toISOString() });
     } else if (cameraMode === 'end') {
       const url = await uploadPhoto(imageData, 'end');
       setEndPhoto(url);
       setEnded(true);
       timer.stop();
       const durationMins = Math.floor(timer.seconds / 60);
-      await updateConsultation({ end_photo: url, status: 'completed', duration: durationMins });
+      await updateConsultation({ end_photo: url, status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
     } else if (cameraMode === 'edit_start') {
       const url = await uploadPhoto(imageData, 'start_edit');
       setStartPhoto(url);
