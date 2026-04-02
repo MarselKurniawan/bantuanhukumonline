@@ -462,10 +462,10 @@ export default function ConsultationRoom() {
           {/* Client Detail Card */}
           <ClientDetailCard
             clientName={consultation.clientName}
-            nik="3201234567890123"
-            nomorWa="081234567890"
-            jenisKelamin="Laki Laki"
-            penyandangDisabilitas={false}
+            nik={consultation.nik}
+            nomorWa={consultation.telp}
+            jenisKelamin={consultation.jenisKelamin}
+            penyandangDisabilitas={consultation.penyandangDisabilitas}
           />
 
           {/* File Collection Card */}
