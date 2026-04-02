@@ -77,8 +77,10 @@ export default function CreateConsultationModal({ open, onClose }: Props) {
               <Input value={form.namaPengguna} onChange={(e) => update('namaPengguna', e.target.value)} placeholder="" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">NIK</Label>
-              <Input value={form.nik} onChange={(e) => update('nik', e.target.value)} placeholder="" />
+              <Label className="text-sm font-semibold">NIK (16 digit)</Label>
+              <Input value={form.nik} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 16); update('nik', v); }} placeholder="Masukkan 16 digit NIK" maxLength={16} />
+              {form.nik.length > 0 && form.nik.length < 16 && <p className="text-xs text-destructive">{form.nik.length}/16 digit</p>}
+              {form.nik.length === 16 && <p className="text-xs text-emerald-600">✓ 16 digit</p>}
             </div>
           </div>
 
