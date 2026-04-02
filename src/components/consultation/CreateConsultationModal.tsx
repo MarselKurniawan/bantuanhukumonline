@@ -131,9 +131,9 @@ export default function CreateConsultationModal({ open, onClose }: Props) {
               <Select value={form.jenisKonsultasi} onValueChange={(v) => update('jenisKonsultasi', v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="offline">Offline</SelectItem>
-                  <SelectItem value="chat">Chat</SelectItem>
-                  <SelectItem value="video_call">Video Call</SelectItem>
+                  {consultationTypes.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
