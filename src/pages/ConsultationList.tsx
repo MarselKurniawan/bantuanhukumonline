@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { consultations } from '@/data/mockData';
+import { useConsultations } from '@/hooks/useConsultations';
 import { useAuth } from '@/contexts/AuthContext';
 import CreateConsultationModal from '@/components/consultation/CreateConsultationModal';
 import { exportToPDF, exportToCSV, exportToExcel } from '@/lib/exportUtils';
