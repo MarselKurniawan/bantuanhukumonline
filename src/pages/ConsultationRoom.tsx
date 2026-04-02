@@ -185,9 +185,6 @@ export default function ConsultationRoom() {
 
   const handleEditPhoto = (mode: 'edit_start' | 'edit_end') => { setCameraMode(mode); setCameraOpen(true); };
 
-  // Jitsi room name based on consultation id
-  const jitsiRoomName = `consultation_${id?.replace(/-/g, '_')}`;
-  const displayName = profile?.nama || 'User';
 
   return (
     <div className="space-y-5">
