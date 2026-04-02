@@ -27,6 +27,7 @@ const typeLabel: Record<string, string> = { chat: 'Chat Online', offline: 'Offli
 export default function ConsultationRoom() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { role, profile } = useAuth();
   const { consultation, loading: consultationLoading, updateConsultation } = useConsultation(id);
   const startTimeFromDB = consultation?.startTime || null;
