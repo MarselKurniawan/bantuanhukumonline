@@ -24,6 +24,7 @@ const typeStyle: Record<string, { icon: typeof Monitor; label: string; cls: stri
 export default function ConsultationList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
 
   const filtered = consultations.filter(
     (c) =>
