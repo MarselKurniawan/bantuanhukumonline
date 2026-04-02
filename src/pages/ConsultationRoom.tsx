@@ -58,7 +58,10 @@ export default function ConsultationRoom() {
       if (consultation.endPhoto) setEndPhoto(consultation.endPhoto);
       if (consultation.status === 'in_progress') {
         setStarted(true);
-        if (!timer.isRunning) timer.start();
+        // Auto-open chat for chat/video consultations
+        if (consultation.consultationType === 'chat' || consultation.consultationType === 'video_call') {
+          setChatOpen(true);
+        }
       }
       if (consultation.status === 'completed') {
         setStarted(true);
