@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, SlidersHorizontal, Download, ExternalLink, Trash2, Plus, Monitor, MessageCircle, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { consultations } from '@/data/mockData';
+import CreateConsultationModal from '@/components/consultation/CreateConsultationModal';
 
 const statusStyle: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800',
