@@ -102,7 +102,17 @@ export default function CreateConsultationModal({ open, onClose, onCreated }: Pr
       return;
     }
     toast({ title: 'Berhasil', description: 'Konsultasi baru berhasil dibuat' });
+    
+    // Generate a mock consultation ID
+    const newId = 'new-' + Date.now();
     onClose();
+    
+    // If lawyer creates offline, trigger auto-start
+    if (isLawyer && form.jenisKonsultasi === 'offline') {
+      onCreated?.(newId, 'offline');
+    } else {
+      onCreated?.(newId, form.jenisKonsultasi);
+    }
   };
 
   return (
