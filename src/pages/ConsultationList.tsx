@@ -121,9 +121,9 @@ export default function ConsultationList() {
     return parts.length > 0 ? parts.join(' ') : 'Semua Data';
   };
 
-  const handleExport = (type: 'pdf' | 'csv' | 'excel') => {
+  const handleExport = async (type: 'pdf' | 'csv' | 'excel') => {
     const label = getFilterLabel();
-    if (type === 'pdf') exportToPDF(filtered, label);
+    if (type === 'pdf') await exportToPDF(filtered, label);
     else if (type === 'csv') exportToCSV(filtered, label);
     else exportToExcel(filtered, label);
     setShowExportMenu(false);
