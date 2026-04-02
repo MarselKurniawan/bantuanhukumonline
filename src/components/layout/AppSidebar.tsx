@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Clock, Database, Users, ChevronDown, Gavel, UserCheck, Scale, Briefcase, Shield } from 'lucide-react';
+import { Clock, Database, Users, ChevronDown, Gavel, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -36,7 +36,12 @@ const allMenuItems: MenuItem[] = [
   },
 ];
 
-export default function AppSidebar() {
+interface AppSidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function AppSidebar({ open, onClose }: AppSidebarProps) {
   const location = useLocation();
   const { role } = useAuth();
   const [openMenus, setOpenMenus] = useState<string[]>([]);
@@ -59,6 +64,11 @@ export default function AppSidebar() {
     }
   }, [role]);
 
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    onClose?.();
+  }, [location.pathname]);
+
   const toggleMenu = (label: string) => {
     setOpenMenus((prev) =>
       prev.includes(label) ? prev.filter((m) => m !== label) : [...prev, label]
@@ -72,23 +82,28 @@ export default function AppSidebar() {
     return role && item.roles.includes(role);
   });
 
-  return (
-    <aside className="w-[250px] min-h-screen bg-sidebar flex flex-col shrink-0">
-      <div className="px-5 py-5 flex items-center gap-3 border-b border-white/10">
-        <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center">
-          <Gavel className="h-4 w-4 text-secondary-foreground" />
+  const sidebarContent = (
+    <>
+      <div className="px-5 py-5 flex items-center justify-between border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center">
+            <Gavel className="h-4 w-4 text-secondary-foreground" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white leading-none">Bantuan Hukum</p>
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-secondary mt-0.5">Online</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-bold text-white leading-none">Bantuan Hukum</p>
-          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-secondary mt-0.5">Online</p>
-        </div>
+        <button onClick={onClose} className="lg:hidden text-white/50 hover:text-white p-1">
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       <div className="px-5 pt-5 pb-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35">Menu Utama</p>
       </div>
 
-      <nav className="flex-1 px-3 space-y-0.5">
+      <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isOpen = openMenus.includes(item.label);
@@ -158,6 +173,25 @@ export default function AppSidebar() {
       </nav>
 
       <div className="px-5 py-4 text-[10px] text-white/25">© 2026 BHO System</div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-[250px] min-h-screen bg-sidebar flex-col shrink-0">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+          <aside className="absolute left-0 top-0 bottom-0 w-[280px] bg-sidebar flex flex-col z-10 animate-in slide-in-from-left duration-200">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

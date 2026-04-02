@@ -196,15 +196,15 @@ export default function ConsultationRoom() {
       </nav>
 
       {/* Top bar */}
-      <div className="bg-card rounded-lg border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="bg-card rounded-lg border p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link to="/"><Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><ArrowLeft className="h-4 w-4" /></Button></Link>
-          <div>
-            <h1 className="text-lg font-bold">Ruang Konsultasi</h1>
-            <p className="text-xs text-muted-foreground">{consultation.clientName} — {consultation.caseName}</p>
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-lg font-bold truncate">Ruang Konsultasi</h1>
+            <p className="text-xs text-muted-foreground truncate">{consultation.clientName} — {consultation.caseName}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap w-full sm:w-auto">
           {(started || ended) && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md">
               {timer.isRunning && <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />}
@@ -225,15 +225,15 @@ export default function ConsultationRoom() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         {/* Left: main area */}
         <div className="lg:col-span-3 space-y-5">
-          <div className="bg-card rounded-lg border overflow-hidden" style={{ minHeight: '460px' }}>
+          <div className="bg-card rounded-lg border overflow-hidden" style={{ minHeight: '360px' }}>
             {isVideo && started && !ended ? (
               <JitsiRoom roomName={jitsiRoomName} displayName={displayName} onClose={handleEndVideo} />
             ) : (isChat) && chatOpen ? (
-              <div className="h-[460px] flex flex-col">
+              <div className="h-[360px] sm:h-[460px] flex flex-col">
                 <ChatRoom consultationId={id!} clientName={consultation.clientName} disabled={ended} onFileShared={handleFileShared} />
               </div>
             ) : isOffline && started ? (
-              <div className="h-[460px] flex flex-col items-center justify-center p-8 space-y-4">
+              <div className="h-[360px] sm:h-[460px] flex flex-col items-center justify-center p-8 space-y-4">
                 <div className="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Camera className="h-7 w-7 text-primary/50" />
                 </div>
@@ -250,7 +250,7 @@ export default function ConsultationRoom() {
                 )}
               </div>
             ) : (
-              <div className="h-[460px] flex flex-col items-center justify-center p-8">
+              <div className="h-[360px] sm:h-[460px] flex flex-col items-center justify-center p-8">
                 <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center mb-3">
                   {isOffline ? <Camera className="h-6 w-6 text-muted-foreground/40" /> :
                    isChat ? <MessageCircle className="h-6 w-6 text-muted-foreground/40" /> :
