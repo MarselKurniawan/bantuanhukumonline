@@ -236,9 +236,7 @@ export default function ConsultationRoom() {
         {/* Left: main area */}
         <div className="lg:col-span-3 space-y-5">
           <div className="bg-card rounded-lg border overflow-hidden" style={{ minHeight: '360px' }}>
-            {isVideo && started && !ended ? (
-              <JitsiRoom roomName={jitsiRoomName} displayName={displayName} onClose={handleEndVideo} />
-            ) : (isChat) && chatOpen ? (
+            {(isVideo || isChat) && chatOpen ? (
               <div className="h-[360px] sm:h-[460px] flex flex-col">
               <ChatRoom consultationId={id!} clientName={consultation.clientName} disabled={ended} />
               </div>
