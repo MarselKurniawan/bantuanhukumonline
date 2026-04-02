@@ -1,9 +1,9 @@
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronRight, Home, Camera, MessageCircle, Video, StopCircle, ArrowLeft, Clock, User, FileText, Calendar, Scale, ImageIcon, Edit2, Save } from 'lucide-react';
+import { ChevronRight, Home, Camera, MessageCircle, Video, StopCircle, ArrowLeft, Clock, User, FileText, Calendar, Scale, ImageIcon, Edit2, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { consultations } from '@/data/mockData';
+import { useConsultation } from '@/hooks/useConsultations';
 import { useTimer } from '@/hooks/useTimer';
 import { useAuth } from '@/contexts/AuthContext';
 import ChatRoom from '@/components/consultation/ChatRoom';
@@ -26,7 +26,7 @@ export default function ConsultationRoom() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const { role } = useAuth();
-  const consultation = consultations.find((c) => c.id === id);
+  const { consultation, loading: consultationLoading, updateConsultation } = useConsultation(id);
   const timer = useTimer();
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraMode, setCameraMode] = useState<'start' | 'end' | 'edit_start' | 'edit_end'>('start');
@@ -41,7 +41,12 @@ export default function ConsultationRoom() {
   // Superadmin edit state
   const isSuperadmin = role === 'superadmin';
   const [editingDuration, setEditingDuration] = useState(false);
-  const [editDurationValue, setEditDurationValue] = useState(consultation?.duration?.toString() || '0');
+  const [editDurationValue, setEditDurationValue] = useState('0');
+
+  // Sync edit duration value when consultation loads
+  useEffect(() => {
+    if (consultation?.duration) setEditDurationValue(consultation.duration.toString());
+  }, [consultation?.duration]);
 
   // Auto-start for lawyer offline consultation
   const autoStart = searchParams.get('autostart') === 'true';
@@ -59,6 +64,14 @@ export default function ConsultationRoom() {
   const handleFileShared = useCallback((file: ChatFile) => {
     setSharedFiles(prev => [...prev, file]);
   }, []);
+
+  if (consultationLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!consultation) {
     // For new consultations (from auto-redirect), show a placeholder
@@ -187,20 +200,45 @@ export default function ConsultationRoom() {
 
   const handleStartOffline = () => { setCameraMode('start'); setCameraOpen(true); };
   const handleEndOffline = () => { setCameraMode('end'); setCameraOpen(true); };
-  const handleCameraCapture = (imageData: string) => {
-    if (cameraMode === 'start') { setStartPhoto(imageData); setStarted(true); timer.start(); }
-    else if (cameraMode === 'end') { setEndPhoto(imageData); setEnded(true); timer.stop(); }
-    else if (cameraMode === 'edit_start') { setStartPhoto(imageData); toast.success('Foto mulai berhasil diperbarui'); }
-    else if (cameraMode === 'edit_end') { setEndPhoto(imageData); toast.success('Foto selesai berhasil diperbarui'); }
+  const handleCameraCapture = async (imageData: string) => {
+    if (cameraMode === 'start') {
+      setStartPhoto(imageData);
+      setStarted(true);
+      timer.start();
+      await updateConsultation({ start_photo: imageData, status: 'in_progress' });
+    } else if (cameraMode === 'end') {
+      setEndPhoto(imageData);
+      setEnded(true);
+      timer.stop();
+      const durationMins = Math.floor(timer.seconds / 60);
+      await updateConsultation({ end_photo: imageData, status: 'completed', duration: durationMins });
+    } else if (cameraMode === 'edit_start') {
+      setStartPhoto(imageData);
+      await updateConsultation({ start_photo: imageData });
+      toast.success('Foto mulai berhasil diperbarui');
+    } else if (cameraMode === 'edit_end') {
+      setEndPhoto(imageData);
+      await updateConsultation({ end_photo: imageData });
+      toast.success('Foto selesai berhasil diperbarui');
+    }
   };
-  const handleStartChat = () => { setChatOpen(true); setStarted(true); timer.start(); };
-  const handleEndChat = () => { setChatOpen(false); setEnded(true); timer.stop(); };
-  const handleStartVideo = () => { setChatOpen(true); setStarted(true); timer.start(); };
-  const handleEndVideo = () => { setEnded(true); timer.stop(); };
+  const handleStartChat = () => { setChatOpen(true); setStarted(true); timer.start(); updateConsultation({ status: 'in_progress' }); };
+  const handleEndChat = () => {
+    setChatOpen(false); setEnded(true); timer.stop();
+    const durationMins = Math.floor(timer.seconds / 60);
+    updateConsultation({ status: 'completed', duration: durationMins });
+  };
+  const handleStartVideo = () => { setChatOpen(true); setStarted(true); timer.start(); updateConsultation({ status: 'in_progress' }); };
+  const handleEndVideo = () => {
+    setEnded(true); timer.stop();
+    const durationMins = Math.floor(timer.seconds / 60);
+    updateConsultation({ status: 'completed', duration: durationMins });
+  };
 
-  const handleSaveDuration = () => {
+  const handleSaveDuration = async () => {
     const mins = parseInt(editDurationValue);
     if (isNaN(mins) || mins < 0) { toast.error('Durasi tidak valid'); return; }
+    await updateConsultation({ duration: mins });
     toast.success(`Durasi diperbarui menjadi ${mins} menit`);
     setEditingDuration(false);
   };
@@ -424,10 +462,10 @@ export default function ConsultationRoom() {
           {/* Client Detail Card */}
           <ClientDetailCard
             clientName={consultation.clientName}
-            nik="3201234567890123"
-            nomorWa="081234567890"
-            jenisKelamin="Laki Laki"
-            penyandangDisabilitas={false}
+            nik={consultation.nik}
+            nomorWa={consultation.telp}
+            jenisKelamin={consultation.jenisKelamin}
+            penyandangDisabilitas={consultation.penyandangDisabilitas}
           />
 
           {/* File Collection Card */}

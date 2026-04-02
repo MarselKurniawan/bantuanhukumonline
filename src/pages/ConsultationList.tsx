@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { consultations } from '@/data/mockData';
+import { useConsultations } from '@/hooks/useConsultations';
 import { useAuth } from '@/contexts/AuthContext';
 import CreateConsultationModal from '@/components/consultation/CreateConsultationModal';
 import { exportToPDF, exportToCSV, exportToExcel } from '@/lib/exportUtils';
@@ -44,6 +44,7 @@ const PER_PAGE_OPTIONS = [10, 20, 30, 0]; // 0 = show all
 export default function ConsultationList() {
   const navigate = useNavigate();
   const { role } = useAuth();
+  const { consultations, loading: consultationsLoading } = useConsultations();
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -62,8 +63,8 @@ export default function ConsultationList() {
   // Available years from data
   const years = useMemo(() => {
     const ys = new Set(consultations.map(c => { const p = parseDateString(c.date); return p ? p.getFullYear() : 0; }).filter(Boolean));
-    return Array.from(ys).sort((a, b) => b - a);
-  }, []);
+    return Array.from(ys).sort((a, b) => (b as number) - (a as number));
+  }, [consultations]);
 
   // Filter logic
   const filtered = useMemo(() => {
@@ -98,7 +99,7 @@ export default function ConsultationList() {
     }
 
     return result;
-  }, [search, filterMonth, filterYear, dateFrom, dateTo]);
+  }, [consultations, search, filterMonth, filterYear, dateFrom, dateTo]);
 
   // Summary
   const totalMinutes = filtered.reduce((sum, c) => sum + (c.duration || 0), 0);
@@ -229,7 +230,7 @@ export default function ConsultationList() {
                     <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Semua Tahun" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Semua Tahun</SelectItem>
-                      {years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+                      {years.map((y: any) => <SelectItem key={String(y)} value={String(y)}>{String(y)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
