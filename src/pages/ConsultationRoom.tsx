@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ChatRoom from '@/components/consultation/ChatRoom';
 import RatingPanel from '@/components/consultation/RatingPanel';
 import CameraModal from '@/components/consultation/CameraModal';
+import ClientDetailCard from '@/components/consultation/ClientDetailCard';
 import { toast } from 'sonner';
 
 const statusStyle: Record<string, string> = {
@@ -212,7 +213,7 @@ export default function ConsultationRoom() {
           {/* Rating mobile */}
           {showRating && (
             <div className="lg:hidden">
-              <RatingPanel />
+              <RatingPanel clientName={consultation.clientName} />
             </div>
           )}
         </div>
@@ -304,9 +305,18 @@ export default function ConsultationRoom() {
             </div>
           </div>
 
+          {/* Client Detail Card */}
+          <ClientDetailCard
+            clientName={consultation.clientName}
+            nik="3201234567890123"
+            nomorWa="081234567890"
+            jenisKelamin="Laki Laki"
+            penyandangDisabilitas={false}
+          />
+
           {showRating && (
             <div className="hidden lg:block">
-              <RatingPanel />
+              <RatingPanel clientName={consultation.clientName} />
             </div>
           )}
         </div>

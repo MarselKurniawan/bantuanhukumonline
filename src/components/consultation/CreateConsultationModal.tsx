@@ -1,30 +1,34 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   open: boolean;
   onClose: () => void;
 }
 
-const lawyers = [
-  'Pilih Lawyer Otomatis',
-  'Dr. Ahmad Pratama, S.H.',
-  'Siti Rahmawati, S.H.',
-  'Budi Santoso, S.H.',
-  'Dewi Lestari, S.H.',
-  'Rina Agustina, S.H.',
-];
+interface LawyerOption {
+  user_id: string;
+  nama: string;
+  isOnline: boolean;
+  isOnConsultation: boolean;
+}
 
 export default function CreateConsultationModal({ open, onClose }: Props) {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
+  const [jenisLayananOptions, setJenisLayananOptions] = useState<{ id: string; nama: string }[]>([]);
+  const [jenisHukumOptions, setJenisHukumOptions] = useState<{ id: string; nama: string }[]>([]);
+  const [lawyerOptions, setLawyerOptions] = useState<LawyerOption[]>([]);
+  const [handleSelf, setHandleSelf] = useState(false);
+
   const [form, setForm] = useState({
     namaPengguna: '',
     nik: '',
@@ -34,19 +38,57 @@ export default function CreateConsultationModal({ open, onClose }: Props) {
     penyandangDisabilitas: 'Ya',
     namaKasus: '',
     jenisKonsultasi: role === 'client' ? 'chat' : 'offline',
-    jenisLayanan: 'Layanan Konsultasi (SKTM)',
-    jenisHukum: 'Pidana',
+    jenisLayanan: '',
+    jenisHukum: '',
     tanggalKonsultasi: new Date().toISOString().split('T')[0],
     agenda: '',
-    pilihLawyer: 'Pilih Lawyer Otomatis',
+    pilihLawyer: 'auto',
   });
 
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
+
+  // Fetch master data & lawyers
+  useEffect(() => {
+    if (!open) return;
+    const fetchData = async () => {
+      const [layananRes, hukumRes, rolesRes] = await Promise.all([
+        supabase.from('master_jenis_layanan').select('id, nama').order('nama'),
+        supabase.from('master_jenis_hukum').select('id, nama').order('nama'),
+        supabase.from('user_roles').select('user_id').eq('role', 'lawyer'),
+      ]);
+      
+      const layanan = layananRes.data || [];
+      const hukum = hukumRes.data || [];
+      setJenisLayananOptions(layanan);
+      setJenisHukumOptions(hukum);
+      if (layanan.length > 0 && !form.jenisLayanan) setForm(p => ({ ...p, jenisLayanan: layanan[0].nama }));
+      if (hukum.length > 0 && !form.jenisHukum) setForm(p => ({ ...p, jenisHukum: hukum[0].nama }));
+
+      // Fetch lawyer profiles with online status
+      if (rolesRes.data && rolesRes.data.length > 0) {
+        const lawyerIds = rolesRes.data.map(r => r.user_id);
+        const { data: profiles } = await supabase.from('profiles').select('user_id, nama, last_seen_at').in('user_id', lawyerIds).eq('approval_status', 'approved');
+        const now = new Date();
+        const lawyers: LawyerOption[] = (profiles || []).map(p => {
+          const lastSeen = p.last_seen_at ? new Date(p.last_seen_at) : null;
+          const isOnline = lastSeen ? (now.getTime() - lastSeen.getTime()) < 24 * 60 * 60 * 1000 : false;
+          return { user_id: p.user_id, nama: p.nama, isOnline, isOnConsultation: false };
+        });
+        setLawyerOptions(lawyers);
+      }
+    };
+    fetchData();
+  }, [open]);
 
   // Client cannot create offline consultations
   const consultationTypes = role === 'client'
     ? [{ value: 'chat', label: 'Chat' }, { value: 'video_call', label: 'Video Call' }]
     : [{ value: 'offline', label: 'Offline' }, { value: 'chat', label: 'Chat' }, { value: 'video_call', label: 'Video Call' }];
+
+  // Lawyer always handles their own consultation
+  const isLawyer = role === 'lawyer';
+  const isAdminOrSuperadmin = role === 'admin' || role === 'superadmin';
+  const isClient = role === 'client';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +116,7 @@ export default function CreateConsultationModal({ open, onClose }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Nama Pengguna</Label>
-              <Input value={form.namaPengguna} onChange={(e) => update('namaPengguna', e.target.value)} placeholder="" />
+              <Input value={form.namaPengguna} onChange={(e) => update('namaPengguna', e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">NIK (16 digit)</Label>
@@ -88,7 +130,7 @@ export default function CreateConsultationModal({ open, onClose }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Telp</Label>
-              <Input value={form.telp} onChange={(e) => update('telp', e.target.value)} placeholder="" />
+              <Input value={form.telp} onChange={(e) => update('telp', e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Tanggal Lahir</Label>
@@ -124,7 +166,7 @@ export default function CreateConsultationModal({ open, onClose }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Nama Kasus</Label>
-              <Input value={form.namaKasus} onChange={(e) => update('namaKasus', e.target.value)} placeholder="" />
+              <Input value={form.namaKasus} onChange={(e) => update('namaKasus', e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Jenis Konsultasi</Label>
@@ -139,26 +181,35 @@ export default function CreateConsultationModal({ open, onClose }: Props) {
             </div>
           </div>
 
-          {/* Row 5 */}
+          {/* Row 5 - Master data from DB */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Jenis Layanan</Label>
               <Select value={form.jenisLayanan} onValueChange={(v) => update('jenisLayanan', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Pilih jenis layanan" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Layanan Konsultasi (SKTM)">Layanan Konsultasi (SKTM)</SelectItem>
-                  <SelectItem value="Layanan Konsultasi (Non-SKTM)">Layanan Konsultasi (Non-SKTM)</SelectItem>
+                  {jenisLayananOptions.length === 0 ? (
+                    <SelectItem value="_empty" disabled>Belum ada data</SelectItem>
+                  ) : (
+                    jenisLayananOptions.map((l) => (
+                      <SelectItem key={l.id} value={l.nama}>{l.nama}</SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Jenis Hukum</Label>
               <Select value={form.jenisHukum} onValueChange={(v) => update('jenisHukum', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Pilih jenis hukum" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Pidana">Pidana</SelectItem>
-                  <SelectItem value="Perdata">Perdata</SelectItem>
-                  <SelectItem value="Tata Usaha Negara">Tata Usaha Negara</SelectItem>
+                  {jenisHukumOptions.length === 0 ? (
+                    <SelectItem value="_empty" disabled>Belum ada data</SelectItem>
+                  ) : (
+                    jenisHukumOptions.map((h) => (
+                      <SelectItem key={h.id} value={h.nama}>{h.nama}</SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -176,20 +227,68 @@ export default function CreateConsultationModal({ open, onClose }: Props) {
             </div>
           </div>
 
-          {/* Row 7 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">Pilih Lawyer</Label>
-              <Select value={form.pilihLawyer} onValueChange={(v) => update('pilihLawyer', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {lawyers.map((l) => (
-                    <SelectItem key={l} value={l}>{l}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Row 7 - Lawyer picker (role-based) */}
+          {isLawyer ? (
+            <div className="bg-muted/50 rounded-lg p-3 border">
+              <p className="text-sm font-semibold text-foreground">Lawyer yang menangani</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Anda otomatis yang menangani konsultasi ini</p>
             </div>
-          </div>
+          ) : isClient ? (
+            <div className="bg-muted/50 rounded-lg p-3 border">
+              <p className="text-sm font-semibold text-foreground">Pilih Lawyer</p>
+              <p className="text-xs text-muted-foreground mt-0.5 mb-2">Lawyer akan dipilih otomatis berdasarkan ketersediaan</p>
+              <div className="flex flex-wrap gap-1.5">
+                {lawyerOptions.filter(l => l.isOnline && !l.isOnConsultation).length > 0 ? (
+                  lawyerOptions.filter(l => l.isOnline).map(l => (
+                    <span key={l.user_id} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-background border text-xs">
+                      <span className={`h-1.5 w-1.5 rounded-full ${l.isOnConsultation ? 'bg-amber-400' : 'bg-emerald-500'}`} />
+                      {l.nama}
+                      {l.isOnConsultation && <span className="text-[10px] text-amber-600">(On Consultation)</span>}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs text-muted-foreground">Tidak ada lawyer yang online saat ini</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Admin / Superadmin */
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="handleSelf"
+                  checked={handleSelf}
+                  onCheckedChange={(v) => setHandleSelf(!!v)}
+                />
+                <label htmlFor="handleSelf" className="text-sm font-semibold cursor-pointer">Saya sendiri yang menangani</label>
+              </div>
+              {!handleSelf && (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-semibold">Pilih Lawyer</Label>
+                  <Select value={form.pilihLawyer} onValueChange={(v) => update('pilihLawyer', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">🔄 Pilih Lawyer Otomatis</SelectItem>
+                      {lawyerOptions.map((l) => (
+                        <SelectItem
+                          key={l.user_id}
+                          value={l.user_id}
+                          disabled={l.isOnConsultation}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className={`h-1.5 w-1.5 rounded-full ${l.isOnConsultation ? 'bg-amber-400' : l.isOnline ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
+                            {l.nama}
+                            {l.isOnConsultation && <span className="text-[10px] text-amber-600 ml-1">(On Consultation)</span>}
+                            {!l.isOnline && !l.isOnConsultation && <span className="text-[10px] text-muted-foreground ml-1">(Offline)</span>}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
 
           <Button type="submit" className="w-full h-11 text-sm font-bold">
             Simpan
