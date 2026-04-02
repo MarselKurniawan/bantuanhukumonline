@@ -4,7 +4,7 @@ import { ChevronRight, Home, Camera, MessageCircle, Video, StopCircle, ArrowLeft
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useConsultation } from '@/hooks/useConsultations';
-import { useTimer } from '@/hooks/useTimer';
+import { useTimer, formatDurationText } from '@/hooks/useTimer';
 import { useAuth } from '@/contexts/AuthContext';
 import ChatRoom from '@/components/consultation/ChatRoom';
 import RatingPanel from '@/components/consultation/RatingPanel';
