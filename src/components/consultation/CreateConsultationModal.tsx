@@ -91,7 +91,9 @@ export default function CreateConsultationModal({ open, onClose, onCreated }: Pr
   const isAdminOrSuperadmin = role === 'admin' || role === 'superadmin';
   const isClient = role === 'client';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.namaPengguna.trim() || !form.namaKasus.trim()) {
       toast({ title: 'Error', description: 'Nama Pengguna dan Nama Kasus wajib diisi', variant: 'destructive' });
@@ -101,17 +103,62 @@ export default function CreateConsultationModal({ open, onClose, onCreated }: Pr
       toast({ title: 'Error', description: 'NIK harus tepat 16 digit', variant: 'destructive' });
       return;
     }
+
+    setSaving(true);
+
+    // Determine lawyer_user_id
+    let lawyerUserId: string | null = null;
+    if (isLawyer) {
+      lawyerUserId = user?.id || null;
+    } else if (isAdminOrSuperadmin) {
+      if (handleSelf) {
+        lawyerUserId = user?.id || null;
+      } else if (form.pilihLawyer !== 'auto') {
+        lawyerUserId = form.pilihLawyer;
+      } else {
+        // Auto: pick first available online lawyer
+        const available = lawyerOptions.find(l => l.isOnline && !l.isOnConsultation);
+        lawyerUserId = available?.user_id || null;
+      }
+    } else {
+      // Client: auto-assign
+      const available = lawyerOptions.find(l => l.isOnline && !l.isOnConsultation);
+      lawyerUserId = available?.user_id || null;
+    }
+
+    const { data, error } = await supabase.from('consultations').insert({
+      client_user_id: isClient ? user?.id : null,
+      lawyer_user_id: lawyerUserId,
+      client_name: form.namaPengguna,
+      case_name: form.namaKasus,
+      consultation_type: form.jenisKonsultasi as any,
+      service_type: form.jenisLayanan || null,
+      law_type: form.jenisHukum || null,
+      date: form.tanggalKonsultasi,
+      agenda: form.agenda,
+      nik: form.nik || null,
+      telp: form.telp || null,
+      tanggal_lahir: form.tanggalLahir || null,
+      jenis_kelamin: form.jenisKelamin,
+      penyandang_disabilitas: form.penyandangDisabilitas === 'Ya',
+    }).select('id, consultation_type').single();
+
+    setSaving(false);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+
     toast({ title: 'Berhasil', description: 'Konsultasi baru berhasil dibuat' });
-    
-    // Generate a mock consultation ID
-    const newId = 'new-' + Date.now();
     onClose();
     
-    // If lawyer creates offline, trigger auto-start
-    if (isLawyer && form.jenisKonsultasi === 'offline') {
-      onCreated?.(newId, 'offline');
-    } else {
-      onCreated?.(newId, form.jenisKonsultasi);
+    if (data) {
+      if (isLawyer && form.jenisKonsultasi === 'offline') {
+        onCreated?.(data.id, 'offline');
+      } else {
+        onCreated?.(data.id, form.jenisKonsultasi);
+      }
     }
   };
 
