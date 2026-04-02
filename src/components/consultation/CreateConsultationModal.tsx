@@ -138,7 +138,6 @@ export default function CreateConsultationModal({ open, onClose, onCreated }: Pr
 
   const isLawyer = role === 'lawyer';
   const isAdminOrSuperadmin = role === 'admin' || role === 'superadmin';
-  const isClient = role === 'client';
 
   const [saving, setSaving] = useState(false);
 
