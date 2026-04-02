@@ -155,16 +155,16 @@ export default function ConsultationRoom() {
     }
   };
 
-  const handleStartChat = () => { setChatOpen(true); setStarted(true); timer.start(); updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() }); };
+  const handleStartChat = () => { setChatOpen(true); setStarted(true); updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() }); };
   const handleEndChat = () => {
-    setChatOpen(false); setEnded(true); timer.stop();
-    const durationMins = Math.floor(timer.seconds / 60);
+    setEnded(true); timer.stop();
+    const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
     updateConsultation({ status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
   };
-  const handleStartVideo = () => { setChatOpen(true); setStarted(true); timer.start(); updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() }); };
+  const handleStartVideo = () => { setChatOpen(true); setStarted(true); updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() }); };
   const handleEndVideo = () => {
     setEnded(true); timer.stop();
-    const durationMins = Math.floor(timer.seconds / 60);
+    const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
     updateConsultation({ status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
   };
 
