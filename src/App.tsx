@@ -15,6 +15,7 @@ import LawyerListPage from "./pages/LawyerListPage";
 import AdminListPage from "./pages/AdminListPage";
 import MasterDataPage from "./pages/MasterDataPage";
 import NotFound from "./pages/NotFound";
+import ProfilePage from "./pages/ProfilePage";
 import { Scale, Briefcase } from "lucide-react";
 
 const queryClient = new QueryClient();
