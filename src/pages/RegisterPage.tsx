@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gavel, Eye, EyeOff } from 'lucide-react';
+import { Scale, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function RegisterPage() {
@@ -31,7 +31,6 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    // Check if NIK already exists
     const { data: existingProfiles } = await supabase
       .from('profiles')
       .select('id, nama, approval_status, rejection_reason')
@@ -41,15 +40,12 @@ export default function RegisterPage() {
       const existing = existingProfiles[0];
       if (existing.approval_status === 'pending') {
         toast.error('NIK ini sudah terdaftar dan sedang menunggu persetujuan admin.');
-        setLoading(false);
-        return;
+        setLoading(false); return;
       }
       if (existing.approval_status === 'approved') {
         toast.error('NIK ini sudah terdaftar dan aktif. Silakan login.');
-        setLoading(false);
-        return;
+        setLoading(false); return;
       }
-      // If rejected, allow re-registration (the old account stays but new one is created)
     }
 
     const { error } = await supabase.auth.signUp({
@@ -72,34 +68,47 @@ export default function RegisterPage() {
     navigate('/login');
   };
 
+  const inputClass = "bg-white border-0 text-foreground h-11";
+  const labelClass = "text-sm font-semibold text-white";
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-md">
-        <div className="bg-card rounded-2xl shadow-lg border border-border p-6 sm:p-8">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ backgroundColor: '#1a3a2a' }}>
+      <div className="w-full max-w-lg">
+        <div className="rounded-2xl shadow-2xl p-6 sm:p-8 border" style={{ backgroundColor: '#1e5c3a', borderColor: '#2a7a4e' }}>
           <div className="flex flex-col items-center mb-6">
-            <div className="h-14 w-14 rounded-xl bg-primary flex items-center justify-center mb-3">
-              <Gavel className="h-7 w-7 text-primary-foreground" />
+            <div className="h-16 w-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#d4a017', boxShadow: '0 0 20px rgba(212,160,23,0.3)' }}>
+              <Scale className="h-8 w-8" style={{ color: '#1a3a2a' }} />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Daftar Akun</h1>
-            <p className="text-sm text-muted-foreground mt-1">Bantuan Hukum Online</p>
+            <h1 className="text-2xl font-bold text-white">
+              Bantuan Hukum <span style={{ color: '#d4a017' }}>Online</span>
+            </h1>
           </div>
 
-          <form onSubmit={handleRegister} className="space-y-3.5">
+          <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">Nama Lengkap</Label>
-              <Input value={form.nama} onChange={(e) => update('nama', e.target.value)} placeholder="Nama lengkap" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">NIK (16 digit)</Label>
-              <Input value={form.nik} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 16); update('nik', v); }} placeholder="Masukkan 16 digit NIK" maxLength={16} />
-              {form.nik.length > 0 && form.nik.length < 16 && <p className="text-xs text-destructive">{form.nik.length}/16 digit</p>}
-              {form.nik.length === 16 && <p className="text-xs text-emerald-600 font-medium">✓ 16 digit</p>}
+              <Label className={labelClass}>Nama Lengkap</Label>
+              <Input value={form.nama} onChange={(e) => update('nama', e.target.value)} placeholder="Nama lengkap" className={inputClass} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">Jenis Kelamin</Label>
+                <Label className={labelClass}>NIK (16 digit)</Label>
+                <Input value={form.nik} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 16); update('nik', v); }} placeholder="16 digit NIK" maxLength={16} className={inputClass} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>WhatsApp</Label>
+                <Input value={form.nomorWa} onChange={(e) => update('nomorWa', e.target.value)} placeholder="08xxxxxxxxxx" className={inputClass} />
+              </div>
+            </div>
+            {form.nik.length > 0 && form.nik.length < 16 && <p className="text-xs" style={{ color: '#d4a017' }}>{form.nik.length}/16 digit</p>}
+            <div className="space-y-1.5">
+              <Label className={labelClass}>Tanggal Lahir</Label>
+              <Input type="date" value={form.tanggalLahir} onChange={(e) => update('tanggalLahir', e.target.value)} className={inputClass} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Jenis Kelamin</Label>
                 <Select value={form.jenisKelamin} onValueChange={(v) => update('jenisKelamin', v)}>
-                  <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
+                  <SelectTrigger className={inputClass}><SelectValue placeholder="Pilih" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Laki-laki">Laki-laki</SelectItem>
                     <SelectItem value="Perempuan">Perempuan</SelectItem>
@@ -107,9 +116,9 @@ export default function RegisterPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">Disabilitas</Label>
+                <Label className={labelClass}>Disabilitas</Label>
                 <Select value={form.penyandangDisabilitas} onValueChange={(v) => update('penyandangDisabilitas', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className={inputClass}><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="false">Tidak</SelectItem>
                     <SelectItem value="true">Ya</SelectItem>
@@ -117,35 +126,34 @@ export default function RegisterPage() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">Nomor WhatsApp</Label>
-              <Input value={form.nomorWa} onChange={(e) => update('nomorWa', e.target.value)} placeholder="08xxxxxxxxxx" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">Tanggal Lahir</Label>
-              <Input type="date" value={form.tanggalLahir} onChange={(e) => update('tanggalLahir', e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">Email</Label>
-              <Input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="email@contoh.com" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">Password</Label>
-              <div className="relative">
-                <Input type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => update('password', e.target.value)} placeholder="Minimal 6 karakter" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Email</Label>
+                <Input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="email@contoh.com" className={inputClass} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Password</Label>
+                <div className="relative">
+                  <Input type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => update('password', e.target.value)} placeholder="Min 6 karakter" className={`pr-10 ${inputClass}`} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: '#a0c4b0' }}>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             </div>
-            <Button type="submit" className="w-full h-11 font-bold" disabled={loading}>
-              {loading ? 'Memproses...' : 'Daftar'}
+            <Button
+              type="submit"
+              className="w-full h-12 font-bold text-base border-0"
+              style={{ backgroundColor: '#d4a017', color: '#1a3a2a' }}
+              disabled={loading}
+            >
+              {loading ? 'Memproses...' : 'Buat Akun'}
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-5">
-            Sudah punya akun?{' '}
-            <Link to="/login" className="text-primary font-semibold hover:underline">Masuk</Link>
+          <p className="text-center text-sm mt-5" style={{ color: '#a0c4b0' }}>
+            Sudah Punya Akun?{' '}
+            <Link to="/login" className="font-bold hover:underline" style={{ color: '#d4a017' }}>Masuk</Link>
           </p>
         </div>
       </div>
