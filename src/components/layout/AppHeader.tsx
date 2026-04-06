@@ -39,12 +39,14 @@ export default function AppHeader({ onMenuClick }: AppHeaderProps) {
 
       const channel = supabase
         .channel('header-pending')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles', filter: 'approval_status=eq.pending' }, () => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, (payload) => {
           fetchPending();
-          toast.info('Ada pendaftaran user baru!', {
-            action: { label: 'Lihat', onClick: () => navigate('/users/approval') },
-            duration: 8000,
-          });
+          if (payload.eventType === 'INSERT' && (payload.new as any)?.approval_status === 'pending') {
+            toast.info('Ada pendaftaran user baru!', {
+              action: { label: 'Lihat', onClick: () => navigate('/users/approval') },
+              duration: 8000,
+            });
+          }
         })
         .subscribe();
 
