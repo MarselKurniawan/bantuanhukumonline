@@ -309,6 +309,11 @@ export default function ConsultationList() {
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold ${statusStyle[c.status]}`}>
                         {statusLabel[c.status]}
                       </span>
+                      {c.status === 'pending' && !c.lawyerUserId && (
+                        <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 border border-amber-200">
+                          Belum ada lawyer
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -345,6 +350,9 @@ export default function ConsultationList() {
                     <p className="text-xs text-muted-foreground mt-0.5">{c.caseName}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${statusStyle[c.status]}`}>{statusLabel[c.status]}</span>
+                  {c.status === 'pending' && !c.lawyerUserId && (
+                    <span className="block mt-1 text-[10px] font-medium text-amber-600">Belum ada lawyer</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 mt-2 text-[11px] text-muted-foreground">
                   <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-medium ${t.cls}`}>
