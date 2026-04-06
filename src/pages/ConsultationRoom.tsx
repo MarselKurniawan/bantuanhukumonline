@@ -344,20 +344,37 @@ export default function ConsultationRoom() {
               </div>
             </div>
             <div className="p-4 space-y-3">
-              {[
-                { role: 'Pengacara', name: consultation.lawyerName || 'Lawyer' },
-                { role: 'Klien', name: consultation.clientName },
-              ].map((p) => (
-                <div key={p.role} className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    <User className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{p.role}</p>
-                    <p className="text-sm font-medium">{p.name}</p>
-                  </div>
+              {/* Pengacara */}
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <User className="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
-              ))}
+                <div className="flex-1">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Pengacara</p>
+                  {consultation.lawyerUserId ? (
+                    <p className="text-sm font-medium">{consultation.lawyerName || 'Lawyer'}</p>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-amber-600">Belum di-assign</p>
+                      {canEdit && (
+                        <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 px-2" onClick={() => setAssignLawyerOpen(true)}>
+                          <UserPlus className="h-3 w-3" /> Assign
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Klien */}
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <User className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Klien</p>
+                  <p className="text-sm font-medium">{consultation.clientName}</p>
+                </div>
+              </div>
               <div className="border-t my-3" />
               {[
                 { icon: FileText, label: 'Nama Kasus', value: consultation.caseName },
