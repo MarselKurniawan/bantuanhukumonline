@@ -21,6 +21,15 @@ export default function AppLayout() {
     return <Navigate to="/login" replace />;
   }
 
+  // Wait for role to load before making access decisions
+  if (!role) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   // Clients must be approved; other roles are auto-approved
   if (role === 'client' && !isApproved) {
     return <PendingApprovalPage />;
