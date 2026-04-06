@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, CheckCircle } from 'lucide-react';
+import { Search, CheckCircle, User } from 'lucide-react';
+
+interface NikSuggestion {
+  nik: string;
+  nama: string;
+  nomor_wa: string | null;
+  tanggal_lahir: string | null;
+  jenis_kelamin: string | null;
+  penyandang_disabilitas: boolean | null;
+}
 
 interface Props {
   open: boolean;
