@@ -168,9 +168,10 @@ export default function ConsultationRoom() {
     const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
     updateConsultation({ status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
   };
-  const handleStartVideo = () => {
+  const handleStartVideoConsultation = () => {
+    // "Buka Konsultasi" for video: starts timer, opens chat, status in_progress
+    setChatOpen(true); setStarted(true);
     updateConsultation({ status: 'in_progress', start_time: new Date().toISOString() });
-    navigate(`/video-call/${id}`);
   };
   const handleJoinVideo = () => {
     navigate(`/video-call/${id}`);
@@ -224,7 +225,7 @@ export default function ConsultationRoom() {
           {isOffline && started && !ended && <Button variant="destructive" onClick={handleEndOffline} className="gap-2 h-9 text-sm font-semibold"><StopCircle className="h-4 w-4" /> Akhiri</Button>}
           {isChat && !started && !ended && <Button onClick={handleStartChat} className="gap-2 h-9 text-sm font-semibold"><MessageCircle className="h-4 w-4" /> Buka Chat</Button>}
           {isChat && chatOpen && !ended && <Button variant="destructive" onClick={handleEndChat} className="gap-2 h-9 text-sm font-semibold"><StopCircle className="h-4 w-4" /> Akhiri</Button>}
-          {isVideo && !started && <Button onClick={handleStartVideo} className="gap-2 h-9 text-sm font-semibold"><Video className="h-4 w-4" /> Mulai Video</Button>}
+          {isVideo && !started && <Button onClick={handleStartVideoConsultation} className="gap-2 h-9 text-sm font-semibold"><MessageCircle className="h-4 w-4" /> Buka Konsultasi</Button>}
           {isVideo && started && !ended && (
             <>
               <Button onClick={handleJoinVideo} className="gap-2 h-9 text-sm font-semibold"><Video className="h-4 w-4" /> Join Video Call</Button>
