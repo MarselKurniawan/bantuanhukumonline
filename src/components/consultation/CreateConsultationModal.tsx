@@ -38,9 +38,11 @@ export default function CreateConsultationModal({ open, onClose, onCreated }: Pr
   const [jenisLayananOptions, setJenisLayananOptions] = useState<{ id: string; nama: string }[]>([]);
   const [jenisHukumOptions, setJenisHukumOptions] = useState<{ id: string; nama: string }[]>([]);
   const [lawyerOptions, setLawyerOptions] = useState<LawyerOption[]>([]);
-  const [handleSelf, setHandleSelf] = useState(false);
   const [nikFound, setNikFound] = useState(false);
-  const [nikSearching, setNikSearching] = useState(false);
+  const [nikSuggestions, setNikSuggestions] = useState<NikSuggestion[]>([]);
+  const [showNikDropdown, setShowNikDropdown] = useState(false);
+  const nikDropdownRef = useRef<HTMLDivElement>(null);
+  const nikInputRef = useRef<HTMLInputElement>(null);
 
   const isClient = role === 'client';
 
