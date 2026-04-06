@@ -30,7 +30,7 @@ export default function ConsultationRoom() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { role, profile } = useAuth();
-  const { consultation, loading: consultationLoading, updateConsultation } = useConsultation(id);
+  const { consultation, loading: consultationLoading, updateConsultation, refetch } = useConsultation(id);
   const startTimeFromDB = consultation?.startTime || null;
   const timer = useTimer(consultation?.status === 'in_progress' ? startTimeFromDB : null);
   const [cameraOpen, setCameraOpen] = useState(false);
