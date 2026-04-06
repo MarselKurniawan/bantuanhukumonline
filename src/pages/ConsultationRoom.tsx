@@ -465,6 +465,13 @@ export default function ConsultationRoom() {
         imageUrl={photoModalUrl}
         title={photoModalTitle}
       />
+
+      <AssignLawyerModal
+        open={assignLawyerOpen}
+        onClose={() => setAssignLawyerOpen(false)}
+        consultationId={id!}
+        onAssigned={() => { fetchConsultation(); }}
+      />
     </div>
   );
 }
