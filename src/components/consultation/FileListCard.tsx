@@ -5,6 +5,7 @@ import { ChatFile } from '@/types/consultation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { uploadToExternalStorage } from '@/lib/externalStorage';
 
 interface Props {
   consultationId: string;
@@ -67,19 +68,14 @@ export default function FileListCard({ consultationId }: Props) {
     if (!file || !user) return;
     setUploading(true);
 
-    const filePath = `files/${consultationId}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from('consultation-files')
-      .upload(filePath, file);
+    const result = await uploadToExternalStorage(file, `files-${consultationId}`);
 
-    if (uploadError) {
-      toast.error('Gagal upload file: ' + uploadError.message);
+    if (!result.success || !result.url) {
+      toast.error('Gagal upload file: ' + (result.error || 'Unknown error'));
       setUploading(false);
       e.target.value = '';
       return;
     }
-
-    const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
 
     // Save as a chat_message record so it appears in file list
     await supabase.from('chat_messages').insert({
@@ -87,7 +83,7 @@ export default function FileListCard({ consultationId }: Props) {
       sender_user_id: user.id,
       sender_name: 'System',
       message: `📎 ${file.name}`,
-      file_url: urlData.publicUrl,
+      file_url: result.url,
       file_name: file.name,
       file_size: formatSize(file.size),
       file_type: file.type,

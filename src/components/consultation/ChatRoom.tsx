@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChatMessage, ChatFile } from '@/types/consultation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { uploadToExternalStorage } from '@/lib/externalStorage';
 
 interface Props {
   consultationId: string;
@@ -121,20 +122,16 @@ export default function ChatRoom({ consultationId, clientName, disabled }: Props
       return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
-    // Upload to storage
-    const filePath = `chat/${consultationId}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from('consultation-files')
-      .upload(filePath, file);
+    // Upload to external storage
+    const result = await uploadToExternalStorage(file, `chat-${consultationId}`);
 
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
+    if (!result.success || !result.url) {
+      console.error('Upload error:', result.error);
       e.target.value = '';
       return;
     }
 
-    const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
-    const fileUrl = urlData.publicUrl;
+    const fileUrl = result.url;
 
     const chatFile: ChatFile = {
       name: file.name,

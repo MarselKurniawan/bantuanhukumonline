@@ -118,19 +118,21 @@ export default function ConsultationRoom() {
   const isVideo = consultation.consultationType === 'video_call';
   const showRating = ended || consultation.status === 'completed';
 
-  // Upload photo to storage
+  // Upload photo to external storage
   const uploadPhoto = async (imageData: string, prefix: string): Promise<string> => {
-    // Convert base64 to blob
-    const res = await fetch(imageData);
-    const blob = await res.blob();
-    const filePath = `photos/${id}/${prefix}_${Date.now()}.jpg`;
-    const { error } = await supabase.storage.from('consultation-files').upload(filePath, blob, { contentType: 'image/jpeg' });
-    if (error) {
-      console.error('Photo upload error:', error);
-      return imageData; // fallback to base64
+    try {
+      const res = await fetch(imageData);
+      const blob = await res.blob();
+      const file = new File([blob], `${prefix}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const { uploadToExternalStorage } = await import('@/lib/externalStorage');
+      const result = await uploadToExternalStorage(file, `photos-${id}`);
+      if (result.success && result.url) return result.url;
+      console.error('Photo upload error:', result.error);
+      return imageData;
+    } catch (err) {
+      console.error('Photo upload error:', err);
+      return imageData;
     }
-    const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
-    return urlData.publicUrl;
   };
 
   const handleStartOffline = () => { setCameraMode('start'); setCameraOpen(true); };
