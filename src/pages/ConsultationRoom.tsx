@@ -181,11 +181,6 @@ export default function ConsultationRoom() {
     const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
     updateConsultation({ status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
   };
-  const handleEndVideo = () => {
-    setEnded(true); timer.stop();
-    const durationMins = Math.max(1, Math.floor(timer.seconds / 60));
-    updateConsultation({ status: 'completed', duration: durationMins, end_time: new Date().toISOString() });
-  };
 
   const handleSaveDuration = async () => {
     const mins = parseInt(editDurationValue);
