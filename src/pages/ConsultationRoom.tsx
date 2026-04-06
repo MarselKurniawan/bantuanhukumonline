@@ -47,7 +47,9 @@ export default function ConsultationRoom() {
   const [photoModalUrl, setPhotoModalUrl] = useState('');
   const [photoModalTitle, setPhotoModalTitle] = useState('');
 
-  // Superadmin/admin edit state
+  // Assign lawyer modal
+  const [assignLawyerOpen, setAssignLawyerOpen] = useState(false);
+
   const canEdit = role === 'superadmin' || role === 'admin';
   const [editingDuration, setEditingDuration] = useState(false);
   const [editDurationValue, setEditDurationValue] = useState('0');
