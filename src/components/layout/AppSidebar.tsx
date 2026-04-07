@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Clock, Database, Users, ChevronDown, Gavel, X } from 'lucide-react';
+import { Clock, Database, Users, ChevronDown, X } from 'lucide-react';
+import legalEmblem from '@/assets/legal-emblem.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
