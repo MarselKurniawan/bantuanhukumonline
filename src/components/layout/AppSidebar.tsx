@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Clock, Database, Users, ChevronDown, Gavel, X } from 'lucide-react';
+import { Clock, Database, Users, ChevronDown, X } from 'lucide-react';
+import legalEmblem from '@/assets/legal-emblem.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -86,8 +87,8 @@ export default function AppSidebar({ open, onClose }: AppSidebarProps) {
     <>
       <div className="px-5 py-5 flex items-center justify-between border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center">
-            <Gavel className="h-4 w-4 text-secondary-foreground" />
+          <div className="h-9 w-9 rounded-lg bg-secondary/20 flex items-center justify-center overflow-hidden">
+            <img src={legalEmblem} alt="BHO" className="h-8 w-8 object-contain" />
           </div>
           <div>
             <p className="text-sm font-bold text-white leading-none">Bantuan Hukum</p>
