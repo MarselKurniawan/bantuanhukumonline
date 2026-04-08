@@ -37,14 +37,60 @@ Deno.serve(async (req) => {
   }
 
   const { data: callerRole } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", caller.id).single();
-  if (!callerRole || !["superadmin", "admin"].includes(callerRole.role)) {
+  if (!callerRole || !["superadmin", "admin", "lawyer"].includes(callerRole.role)) {
     return new Response(JSON.stringify({ error: "Forbidden" }), {
       status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
   const body = await req.json();
-  const { action, user_id, profile_data, new_role } = body;
+  const { action, user_id, profile_data, new_role, role } = body;
+
+  // Lawyers can only create virtual clients
+  if (callerRole.role === "lawyer" && !["insert_role", "create_virtual_client"].includes(action)) {
+    return new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // insert_role action - for virtual clients (no auth user)
+  if (action === "insert_role") {
+    const { error } = await supabaseAdmin.from("user_roles").insert({ user_id, role: role || "client" });
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // create_virtual_client - create profile + role for walk-in client without auth account
+  if (action === "create_virtual_client") {
+    const virtualUserId = crypto.randomUUID();
+    const pd = body.profile_data || {};
+    const { error: profErr } = await supabaseAdmin.from("profiles").insert({
+      user_id: virtualUserId,
+      nama: pd.nama || "",
+      nik: pd.nik || null,
+      nomor_wa: pd.nomor_wa || null,
+      tanggal_lahir: pd.tanggal_lahir || null,
+      jenis_kelamin: pd.jenis_kelamin || null,
+      penyandang_disabilitas: pd.penyandang_disabilitas || false,
+      approval_status: "approved",
+      approved_at: new Date().toISOString(),
+    });
+    if (profErr) {
+      return new Response(JSON.stringify({ error: profErr.message }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    await supabaseAdmin.from("user_roles").insert({ user_id: virtualUserId, role: "client" });
+    return new Response(JSON.stringify({ success: true, userId: virtualUserId }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   // Admin cannot modify admin/superadmin users
   if (callerRole.role === "admin") {
