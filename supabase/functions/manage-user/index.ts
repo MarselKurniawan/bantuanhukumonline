@@ -59,6 +59,32 @@ Deno.serve(async (req) => {
     });
   }
 
+  // create_virtual_client - create profile + role for walk-in client without auth account
+  if (action === "create_virtual_client") {
+    const virtualUserId = crypto.randomUUID();
+    const pd = body.profile_data || {};
+    const { error: profErr } = await supabaseAdmin.from("profiles").insert({
+      user_id: virtualUserId,
+      nama: pd.nama || "",
+      nik: pd.nik || null,
+      nomor_wa: pd.nomor_wa || null,
+      tanggal_lahir: pd.tanggal_lahir || null,
+      jenis_kelamin: pd.jenis_kelamin || null,
+      penyandang_disabilitas: pd.penyandang_disabilitas || false,
+      approval_status: "approved",
+      approved_at: new Date().toISOString(),
+    });
+    if (profErr) {
+      return new Response(JSON.stringify({ error: profErr.message }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    await supabaseAdmin.from("user_roles").insert({ user_id: virtualUserId, role: "client" });
+    return new Response(JSON.stringify({ success: true, userId: virtualUserId }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   // Admin cannot modify admin/superadmin users
   if (callerRole.role === "admin") {
     const { data: targetRole } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", user_id).single();
