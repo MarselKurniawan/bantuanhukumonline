@@ -239,7 +239,6 @@ export default function CreateConsultationModal({ open, onClose, onCreated }: Pr
     // Auto-create client profile if NIK not found in existing data (walk-in client)
     if (!isClient && !nikFound && form.namaPengguna.trim()) {
       const hasNik = form.nik && form.nik.length === 16;
-      // Check if profile with this NIK already exists
       let profileExists = false;
       if (hasNik) {
         const { data: existing } = await supabase.from('profiles').select('id').eq('nik', form.nik).limit(1);
@@ -247,7 +246,6 @@ export default function CreateConsultationModal({ open, onClose, onCreated }: Pr
       }
       
       if (!profileExists) {
-        // Also check by name to avoid duplicates for non-NIK clients
         let nameExists = false;
         if (!hasNik) {
           const { data: existingName } = await supabase.from('profiles').select('id').eq('nama', form.namaPengguna.trim()).limit(1);
@@ -255,26 +253,19 @@ export default function CreateConsultationModal({ open, onClose, onCreated }: Pr
         }
         
         if (!nameExists) {
-          const virtualUserId = crypto.randomUUID();
-          const profileInsert = {
-            user_id: virtualUserId,
-            nama: form.namaPengguna.trim(),
-            nik: hasNik ? form.nik : null,
-            nomor_wa: form.telp || null,
-            tanggal_lahir: form.tanggalLahir || null,
-            jenis_kelamin: form.jenisKelamin || null,
-            penyandang_disabilitas: form.penyandangDisabilitas === 'Ya',
-            approval_status: 'approved' as const,
-            approved_at: new Date().toISOString(),
-          };
-          
-          const { error: profileErr } = await supabase.from('profiles').insert(profileInsert);
-          if (!profileErr) {
-            // Insert client role - use edge function to bypass RLS
-            await supabase.functions.invoke('manage-user', {
-              body: { action: 'insert_role', user_id: virtualUserId, role: 'client' },
-            });
-          }
+          await supabase.functions.invoke('manage-user', {
+            body: {
+              action: 'create_virtual_client',
+              profile_data: {
+                nama: form.namaPengguna.trim(),
+                nik: hasNik ? form.nik : null,
+                nomor_wa: form.telp || null,
+                tanggal_lahir: form.tanggalLahir || null,
+                jenis_kelamin: form.jenisKelamin || null,
+                penyandang_disabilitas: form.penyandangDisabilitas === 'Ya',
+              },
+            },
+          });
         }
       }
     }
