@@ -141,7 +141,21 @@ export default function ConsultationList() {
     return parts.length > 0 ? parts.join(' ') : 'Semua Data';
   };
 
-  const handleExport = async (type: 'pdf' | 'csv' | 'excel') => {
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { error } = await supabase.from('consultations').delete().eq('id', deleteTarget.id);
+    if (error) {
+      toast.error('Gagal menghapus konsultasi');
+    } else {
+      toast.success(`Konsultasi "${deleteTarget.name}" berhasil dihapus`);
+      refetch();
+    }
+    setDeleting(false);
+    setDeleteTarget(null);
+  };
+
+  const canDelete = role === 'superadmin' || role === 'admin';
     const label = getFilterLabel();
     if (type === 'pdf') await exportToPDF(filtered, label);
     else if (type === 'csv') exportToCSV(filtered, label);
