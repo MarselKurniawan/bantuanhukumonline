@@ -55,6 +55,8 @@ export default function ConsultationList() {
   const [showFilter, setShowFilter] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState('');
 
   // Filter state
   const [filterMonth, setFilterMonth] = useState<string>('all');
@@ -158,11 +160,33 @@ export default function ConsultationList() {
   const canDelete = role === 'superadmin' || role === 'admin';
 
   const handleExport = async (type: 'pdf' | 'csv' | 'excel') => {
-    const label = getFilterLabel();
-    if (type === 'pdf') await exportToPDF(filtered, label);
-    else if (type === 'csv') exportToCSV(filtered, label);
-    else exportToExcel(filtered, label);
     setShowExportMenu(false);
+    setExporting(true);
+    const typeLabels = { pdf: 'PDF', csv: 'CSV', excel: 'Excel' };
+    setExportProgress(`Menyiapkan data ${typeLabels[type]}...`);
+    try {
+      const label = getFilterLabel();
+      if (type === 'pdf') {
+        setExportProgress('Memuat foto bukti konsultasi...');
+        await exportToPDF(filtered, label);
+      } else if (type === 'csv') {
+        setExportProgress('Membuat file CSV...');
+        await new Promise(r => setTimeout(r, 300));
+        exportToCSV(filtered, label);
+      } else {
+        setExportProgress('Membuat file Excel...');
+        await new Promise(r => setTimeout(r, 300));
+        exportToExcel(filtered, label);
+      }
+      setExportProgress('Download berhasil!');
+      await new Promise(r => setTimeout(r, 800));
+      toast.success(`File ${typeLabels[type]} berhasil diunduh`);
+    } catch (err) {
+      toast.error('Gagal mengekspor data');
+    } finally {
+      setExporting(false);
+      setExportProgress('');
+    }
   };
 
   const stats = [
@@ -478,6 +502,23 @@ export default function ConsultationList() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    {/* Export Loading Overlay */}
+    {exporting && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="bg-card rounded-xl border shadow-2xl p-8 max-w-sm w-full mx-4 text-center space-y-4">
+          <div className="mx-auto w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div>
+            <h3 className="font-semibold text-lg">Mengekspor Data</h3>
+            <p className="text-sm text-muted-foreground mt-1">{exportProgress}</p>
+          </div>
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '70%' }} />
+          </div>
+          <p className="text-xs text-muted-foreground">Mohon tunggu, jangan tutup halaman ini</p>
+        </div>
+      </div>
+    )}
     </>
   );
 }
