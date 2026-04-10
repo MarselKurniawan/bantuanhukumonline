@@ -445,6 +445,19 @@ export default function ConsultationList() {
                   <span>{c.date}</span>
                   {c.duration ? <><span>•</span><span>{formatDurationText(c.duration)}</span></> : null}
                 </div>
+                {(c.startPhoto || c.endPhoto) && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <ImageIcon className="h-3 w-3 text-muted-foreground" />
+                    {c.startPhoto && (
+                      <img src={c.startPhoto} alt="Foto Mulai" className="w-8 h-8 rounded object-cover border"
+                        onClick={(e) => { e.stopPropagation(); setPreviewPhoto(c.startPhoto!); }} />
+                    )}
+                    {c.endPhoto && (
+                      <img src={c.endPhoto} alt="Foto Selesai" className="w-8 h-8 rounded object-cover border"
+                        onClick={(e) => { e.stopPropagation(); setPreviewPhoto(c.endPhoto!); }} />
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
