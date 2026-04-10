@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { formatDurationText } from '@/hooks/useTimer';
 import { useNavigate } from 'react-router-dom';
-import { Search, Download, ExternalLink, Trash2, Plus, Monitor, MessageCircle, Video, CalendarIcon, ChevronLeft, ChevronRight, FileText, FileSpreadsheet, FileDown, Clock, X } from 'lucide-react';
+import { Search, Download, ExternalLink, Trash2, Plus, Monitor, MessageCircle, Video, CalendarIcon, ChevronLeft, ChevronRight, FileText, FileSpreadsheet, FileDown, Clock, X, Camera, ImageIcon } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -57,6 +58,7 @@ export default function ConsultationList() {
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState('');
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
   // Filter state
   const [filterMonth, setFilterMonth] = useState<string>('all');
@@ -341,7 +343,7 @@ export default function ConsultationList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                {['No', 'Klien', 'Nama Kasus', 'Tipe', 'Hukum', 'Tanggal', 'Durasi', 'Status', ''].map((h) => (
+                {['No', 'Klien', 'Nama Kasus', 'Tipe', 'Hukum', 'Tanggal', 'Durasi', 'Bukti', 'Status', ''].map((h) => (
                   <th key={h} className="py-3 px-4 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -364,6 +366,26 @@ export default function ConsultationList() {
                     <td className="py-3 px-4 text-xs">{c.lawType}</td>
                     <td className="py-3 px-4 text-xs text-muted-foreground whitespace-nowrap">{c.date}</td>
                     <td className="py-3 px-4 text-xs text-muted-foreground">{formatDurationText(c.duration || 0)}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5">
+                        {c.startPhoto ? (
+                          <img src={c.startPhoto} alt="Foto Mulai" className="w-8 h-8 rounded object-cover cursor-pointer border hover:ring-2 ring-primary transition-all"
+                            onClick={(e) => { e.stopPropagation(); setPreviewPhoto(c.startPhoto!); }} />
+                        ) : (
+                          <div className="w-8 h-8 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                            <Camera className="h-3 w-3 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        {c.endPhoto ? (
+                          <img src={c.endPhoto} alt="Foto Selesai" className="w-8 h-8 rounded object-cover cursor-pointer border hover:ring-2 ring-primary transition-all"
+                            onClick={(e) => { e.stopPropagation(); setPreviewPhoto(c.endPhoto!); }} />
+                        ) : (
+                          <div className="w-8 h-8 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                            <Camera className="h-3 w-3 text-muted-foreground/40" />
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td className="py-3 px-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold ${statusStyle[c.status]}`}>
                         {statusLabel[c.status]}
@@ -392,7 +414,7 @@ export default function ConsultationList() {
                 );
               })}
               {paginated.length === 0 && (
-                <tr><td colSpan={9} className="py-12 text-center text-muted-foreground text-sm">Tidak ada data ditemukan</td></tr>
+                <tr><td colSpan={10} className="py-12 text-center text-muted-foreground text-sm">Tidak ada data ditemukan</td></tr>
               )}
             </tbody>
           </table>
@@ -423,6 +445,19 @@ export default function ConsultationList() {
                   <span>{c.date}</span>
                   {c.duration ? <><span>•</span><span>{formatDurationText(c.duration)}</span></> : null}
                 </div>
+                {(c.startPhoto || c.endPhoto) && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <ImageIcon className="h-3 w-3 text-muted-foreground" />
+                    {c.startPhoto && (
+                      <img src={c.startPhoto} alt="Foto Mulai" className="w-8 h-8 rounded object-cover border"
+                        onClick={(e) => { e.stopPropagation(); setPreviewPhoto(c.startPhoto!); }} />
+                    )}
+                    {c.endPhoto && (
+                      <img src={c.endPhoto} alt="Foto Selesai" className="w-8 h-8 rounded object-cover border"
+                        onClick={(e) => { e.stopPropagation(); setPreviewPhoto(c.endPhoto!); }} />
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -519,6 +554,15 @@ export default function ConsultationList() {
         </div>
       </div>
     )}
+
+    {/* Photo Preview Dialog */}
+    <Dialog open={!!previewPhoto} onOpenChange={(open) => !open && setPreviewPhoto(null)}>
+      <DialogContent className="max-w-lg p-2">
+        {previewPhoto && (
+          <img src={previewPhoto} alt="Bukti Konsultasi" className="w-full h-auto rounded-lg" />
+        )}
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
