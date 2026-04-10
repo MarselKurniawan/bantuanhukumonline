@@ -367,6 +367,26 @@ export default function ConsultationList() {
                     <td className="py-3 px-4 text-xs text-muted-foreground whitespace-nowrap">{c.date}</td>
                     <td className="py-3 px-4 text-xs text-muted-foreground">{formatDurationText(c.duration || 0)}</td>
                     <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5">
+                        {c.startPhoto ? (
+                          <img src={c.startPhoto} alt="Foto Mulai" className="w-8 h-8 rounded object-cover cursor-pointer border hover:ring-2 ring-primary transition-all"
+                            onClick={(e) => { e.stopPropagation(); setPreviewPhoto(c.startPhoto!); }} />
+                        ) : (
+                          <div className="w-8 h-8 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                            <Camera className="h-3 w-3 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        {c.endPhoto ? (
+                          <img src={c.endPhoto} alt="Foto Selesai" className="w-8 h-8 rounded object-cover cursor-pointer border hover:ring-2 ring-primary transition-all"
+                            onClick={(e) => { e.stopPropagation(); setPreviewPhoto(c.endPhoto!); }} />
+                        ) : (
+                          <div className="w-8 h-8 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                            <Camera className="h-3 w-3 text-muted-foreground/40" />
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold ${statusStyle[c.status]}`}>
                         {statusLabel[c.status]}
                       </span>
