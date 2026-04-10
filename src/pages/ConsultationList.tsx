@@ -58,6 +58,7 @@ export default function ConsultationList() {
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState('');
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
   // Filter state
   const [filterMonth, setFilterMonth] = useState<string>('all');
