@@ -343,7 +343,7 @@ export default function ConsultationList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                {['No', 'Klien', 'Nama Kasus', 'Tipe', 'Hukum', 'Tanggal', 'Durasi', 'Status', ''].map((h) => (
+                {['No', 'Klien', 'Nama Kasus', 'Tipe', 'Hukum', 'Tanggal', 'Durasi', 'Bukti', 'Status', ''].map((h) => (
                   <th key={h} className="py-3 px-4 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
