@@ -7,24 +7,32 @@ import { saveAs } from 'file-saver';
 const typeLabel: Record<string, string> = { chat: 'Chat', offline: 'Offline', video_call: 'Video Call' };
 const statusLabel: Record<string, string> = { pending: 'Belum Mulai', in_progress: 'Sedang Berlangsung', completed: 'Selesai' };
 
-function formatDuration(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h > 0 ? `${h} jam ${m} menit` : `${m} menit`;
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h} jam ${m} menit ${s} detik`;
+  if (m > 0) return `${m} menit ${s} detik`;
+  return `${s} detik`;
+}
+
+function formatDurationHMS(seconds: number): string {
+  const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s}`;
 }
 
 function buildSummary(data: Consultation[]) {
-  const totalMinutes = data.reduce((sum, c) => sum + (c.duration || 0), 0);
-  const totalHours = Math.floor(totalMinutes / 60);
-  const remainMinutes = totalMinutes % 60;
+  const totalSeconds = data.reduce((sum, c) => sum + (c.duration || 0), 0);
   return {
     total: data.length,
     pending: data.filter(c => c.status === 'pending').length,
     inProgress: data.filter(c => c.status === 'in_progress').length,
     completed: data.filter(c => c.status === 'completed').length,
-    totalMinutes,
-    totalFormatted: `${totalHours} jam ${remainMinutes} menit`,
-    avgDuration: data.length > 0 ? Math.round(totalMinutes / data.length) : 0,
+    totalSeconds,
+    totalFormatted: formatDurationHMS(totalSeconds),
+    avgDuration: data.length > 0 ? Math.round(totalSeconds / data.length) : 0,
   };
 }
 
@@ -376,9 +384,9 @@ export async function exportToPDF(data: Consultation[], filterLabel: string) {
 
 export function exportToCSV(data: Consultation[], filterLabel: string) {
   const summary = buildSummary(data);
-  const headers = ['No', 'Klien', 'Nama Kasus', 'Tipe', 'Layanan', 'Hukum', 'Tanggal', 'Status', 'Durasi (menit)', 'Pengacara', 'Rating', 'Ulasan', 'URL Foto Mulai', 'URL Foto Selesai'];
+  const headers = ['No', 'Klien', 'Nama Kasus', 'Tipe', 'Layanan', 'Hukum', 'Tanggal', 'Status', 'Durasi', 'Pengacara', 'Rating', 'Ulasan', 'URL Foto Mulai', 'URL Foto Selesai'];
   const rows = data.map((c, i) => [
-    i + 1, c.clientName, c.caseName, typeLabel[c.consultationType], c.serviceType, c.lawType, c.date, statusLabel[c.status], c.duration || 0, c.lawyerName || '-',
+    i + 1, c.clientName, c.caseName, typeLabel[c.consultationType], c.serviceType, c.lawType, c.date, statusLabel[c.status], c.duration ? formatDurationHMS(c.duration) : '-', c.lawyerName || '-',
     c.rating || '-', c.review || '-',
     c.startPhoto || '-',
     c.endPhoto || '-',
@@ -404,7 +412,7 @@ export function exportToExcel(data: Consultation[], filterLabel: string) {
     'Hukum': c.lawType,
     'Tanggal': c.date,
     'Status': statusLabel[c.status],
-    'Durasi (menit)': c.duration || 0,
+    'Durasi': c.duration ? formatDurationHMS(c.duration) : '-',
     'Pengacara': c.lawyerName || '-',
     'Rating': c.rating || '-',
     'Ulasan': c.review || '-',
