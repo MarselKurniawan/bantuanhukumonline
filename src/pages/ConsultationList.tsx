@@ -227,13 +227,19 @@ export default function ConsultationList() {
 
       {/* Working hours alert */}
       {isOutsideWorkingHours && (
-        <Alert variant="destructive" className="border-amber-500 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-700">
-          <AlertTriangle className="h-4 w-4 !text-amber-600 dark:!text-amber-400" />
-          <AlertTitle className="font-bold">SAAT INI BERADA DILUAR JAM KERJA!</AlertTitle>
-          <AlertDescription className="text-sm">
-            Jam Kerja: Senin - Jumat, 09.00 - 17.00 WIB
-          </AlertDescription>
-        </Alert>
+        <div className="flex items-start gap-3 rounded-lg border-2 border-destructive/60 bg-destructive/5 p-4 shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-bold text-destructive tracking-wide uppercase">
+              Saat Ini Berada Diluar Jam Kerja!
+            </p>
+            <p className="text-sm text-foreground/70 leading-relaxed">
+              Jam Kerja: <span className="font-semibold text-foreground">Senin – Jumat, 09.00 – 17.00 WIB</span>
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Stats */}
