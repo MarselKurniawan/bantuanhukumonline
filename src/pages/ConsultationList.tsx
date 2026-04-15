@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { formatDurationText } from '@/hooks/useTimer';
+import { formatDurationText, formatDurationHMS } from '@/hooks/useTimer';
 import { useNavigate } from 'react-router-dom';
 import { Search, Download, ExternalLink, Trash2, Plus, Monitor, MessageCircle, Video, CalendarIcon, ChevronLeft, ChevronRight, FileText, FileSpreadsheet, FileDown, Clock, X, Camera, ImageIcon, AlertTriangle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -127,9 +127,9 @@ export default function ConsultationList() {
   }, [consultations, search, filterMonth, filterYear, dateFrom, dateTo]);
 
   // Summary
-  const totalMinutes = filtered.reduce((sum, c) => sum + (c.duration || 0), 0);
-  const totalHours = Math.floor(totalMinutes / 60);
-  const remainMinutes = totalMinutes % 60;
+  const totalSeconds = filtered.reduce((sum, c) => sum + (c.duration || 0), 0);
+  const totalHours = Math.floor(totalSeconds / 3600);
+  const remainMinutes = Math.floor((totalSeconds % 3600) / 60);
 
   // Pagination
   const totalPages = perPage === 0 ? 1 : Math.ceil(filtered.length / perPage);
