@@ -384,6 +384,26 @@ export default function ConsultationList() {
           )}
         </div>
 
+        {/* Loading state */}
+        {consultationsLoading ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-5 animate-fade-in">
+            <div className="relative h-16 w-16">
+              <div className="absolute inset-0 rounded-full border-4 border-primary/15" />
+              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary animate-spin" />
+              <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-primary/60 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+            </div>
+            <div className="text-center space-y-1">
+              <p className="text-sm font-semibold text-foreground tracking-wide">
+                Memuat Data<span className="inline-block animate-pulse">...</span>
+              </p>
+              <p className="text-xs text-muted-foreground">Mohon tunggu sebentar</p>
+            </div>
+            <div className="w-56 h-1 bg-muted rounded-full overflow-hidden">
+              <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent animate-[shimmer_1.5s_ease-in-out_infinite]" />
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Desktop table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
