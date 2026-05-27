@@ -244,16 +244,19 @@ export default function ConsultationList() {
 
       {/* Working hours alert */}
       {isOutsideWorkingHours && (
-        <div className="flex items-start gap-3 rounded-lg border-2 border-destructive/60 bg-destructive/5 p-4 shadow-sm">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
+        <div className="flex items-start gap-4 rounded-lg border border-amber-300 bg-amber-50/80 p-4 shadow-sm">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-amber-100">
+            <AlertTriangle className="h-5 w-5 text-amber-700" aria-hidden="true" />
           </div>
-          <div className="space-y-1">
-            <p className="text-sm font-bold text-destructive tracking-wide uppercase">
-              Saat Ini Berada Diluar Jam Kerja!
+          <div className="flex-1 space-y-1">
+            <p className="text-sm font-semibold text-amber-900 uppercase tracking-wider">
+              Saat Ini Berada Diluar Jam Kerja
             </p>
-            <p className="text-sm text-foreground/70 leading-relaxed">
-              Jam Kerja: <span className="font-semibold text-foreground">Senin – Jumat, 09.00 – 17.00 WIB</span>
+            <p className="text-sm text-amber-800/80 leading-relaxed">
+              Jam Operasional: <span className="font-medium text-amber-900">Senin – Jumat, 09.00 – 17.00 WIB</span>
+            </p>
+            <p className="text-xs text-amber-700/70">
+              Hari ini: {currentDayName}
             </p>
           </div>
         </div>
