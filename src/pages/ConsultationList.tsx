@@ -201,12 +201,29 @@ export default function ConsultationList() {
 
   const hasActiveFilter = filterMonth !== 'all' || filterYear !== 'all' || dateFrom || dateTo;
 
-  // Working hours check: Mon-Fri 09:00-17:00
-  const isOutsideWorkingHours = useMemo(() => {
+  // Working hours check: Mon-Fri 09:00-17:00 WIB — updates every minute
+  const [isOutsideWorkingHours, setIsOutsideWorkingHours] = useState(() => {
     const now = new Date();
-    const day = now.getDay(); // 0=Sun, 6=Sat
+    const day = now.getDay();
     const hour = now.getHours();
     return day === 0 || day === 6 || hour < 9 || hour >= 17;
+  });
+
+  useEffect(() => {
+    const check = () => {
+      const now = new Date();
+      const day = now.getDay();
+      const hour = now.getHours();
+      setIsOutsideWorkingHours(day === 0 || day === 6 || hour < 9 || hour >= 17);
+    };
+    check();
+    const id = setInterval(check, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const currentDayName = useMemo(() => {
+    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    return days[new Date().getDay()];
   }, []);
 
   return (
