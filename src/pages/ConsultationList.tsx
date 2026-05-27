@@ -572,6 +572,8 @@ export default function ConsultationList() {
             </div>
           )}
         </div>
+        </>
+        )}
       </div>
     </div>
 
